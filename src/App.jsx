@@ -21,8 +21,9 @@ function App() {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
 
+    const API_URL = import.meta.env.VITE_API_URL || 'https://eggplant-server.onrender.com';
     try {
-      const response = await axios.post('http://localhost:5000/api/upload', formData, {
+      const response = await axios.post(`${API_URL}/api/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
