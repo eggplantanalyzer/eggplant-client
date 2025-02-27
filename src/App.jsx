@@ -1,7 +1,17 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import axios from 'axios';
 // Import icons
 import { FaCloudUploadAlt, FaSpinner, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+
+// Helper function to convert RGB string to CSS color
+const parseRGBString = (rgbString) => {
+  // Handle both formats: "RGB(r,g,b)" and "[r,g,b]"
+  const matches = rgbString.match(/\d+/g);
+  if (matches && matches.length === 3) {
+    return `rgb(${matches[0]}, ${matches[1]}, ${matches[2]})`;
+  }
+  return 'rgb(0, 0, 0)'; // fallback color
+};
 
 function App() {
   const [files, setFiles] = useState([]);
@@ -9,6 +19,7 @@ function App() {
   const [excelUrl, setExcelUrl] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const resultsRef = useRef(null);
 
   const handleFileChange = (e) => {
     if (e.target.files) {
@@ -37,6 +48,12 @@ function App() {
       setResults(response.data.results);
       setExcelUrl(`${API_URL}${response.data.excel_url}`);
       setPdfUrl(`${API_URL}${response.data.pdf_url}`);
+
+      // Add small delay to ensure the results are rendered
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Error processing images. Please try again.');
@@ -52,7 +69,7 @@ function App() {
           <table className="min-w-full divide-y divide-purple-100">
             <thead className="bg-purple-50">
               <tr>
-                {["ID", "File", "Original", "Processed", "Avg", "Black", "Dark P", "Light P", "Brown"].map((header) => (
+                {["ID", "File", "Original", "Processed", "Average Color", "Black", "Dark P", "Light P", "Brown"].map((header) => (
                   <th 
                     key={header}
                     scope="col" 
@@ -72,17 +89,25 @@ function App() {
                     <img 
                       src={`data:image/png;base64,${result.original_image}`} 
                       alt="Original"
-                      className="h-16 w-16 object-cover rounded-lg"
+                      className="h-24 w-24 object-contain rounded-lg bg-gray-50"
                     />
                   </td>
                   <td className="px-4 py-4">
                     <img
                       src={`data:image/png;base64,${result.processed_image}`}
                       alt="Processed"
-                      className="h-16 w-16 object-cover rounded-lg"
+                      className="h-24 w-24 object-contain rounded-lg bg-gray-50"
                     />
                   </td>
-                  <td className="px-4 py-4">{result.avg_color}</td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-8 h-8 rounded-lg border border-gray-200 shadow-sm"
+                        style={{ backgroundColor: parseRGBString(result.avg_color) }}
+                      />
+                      <span>{result.avg_color}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-4">{result.color_percentages.Black}%</td>
                   <td className="px-4 py-4">{result.color_percentages['Dark Purple']}%</td>
                   <td className="px-4 py-4">{result.color_percentages['Light Purple']}%</td>
@@ -109,30 +134,26 @@ function App() {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <span className="text-xs text-purple-600">Original</span>
-              <img 
-                src={`data:image/png;base64,${result.original_image}`} 
-                alt="Original"
-                className="w-full aspect-square object-cover rounded-lg"
-              />
-            </div>
-            <div className="space-y-2">
-              <span className="text-xs text-purple-600">Processed</span>
-              <img
-                src={`data:image/png;base64,${result.processed_image}`}
-                alt="Processed"
-                className="w-full aspect-square object-cover rounded-lg"
-              />
-            </div>
+          <div className="space-y-2">
+            <span className="text-xs text-purple-600">Processed Image</span>
+            <img
+              src={`data:image/png;base64,${result.processed_image}`}
+              alt="Processed"
+              className="w-full aspect-square object-contain rounded-lg shadow-sm bg-gray-50"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="space-y-2">
               <div>
                 <span className="text-purple-600">Average Color:</span>
-                <p className="font-medium">{result.avg_color}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <div 
+                    className="w-6 h-6 rounded-full border border-gray-200 shadow-sm"
+                    style={{ backgroundColor: parseRGBString(result.avg_color) }}
+                  />
+                  <p className="font-medium">{result.avg_color}</p>
+                </div>
               </div>
               <div>
                 <span className="text-purple-600">Black:</span>
@@ -230,26 +251,32 @@ function App() {
         </div>
 
         {results && results.length > 0 && (
-          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
+          <div ref={resultsRef} className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
             <div className="p-6 md:p-8 space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-xl font-bold text-purple-900">Analysis Results</h2>
-                <div className="flex gap-4 w-full sm:w-auto">
+                <div className="flex gap-3 w-full sm:w-auto">
                   <a 
                     href={excelUrl} 
                     download 
-                    className="flex-1 sm:flex-none px-6 py-3 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 hover:shadow-emerald-300 flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none group relative overflow-hidden px-6 py-3 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg shadow-purple-200/50 hover:shadow-purple-300/50 hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    <FaFileExcel />
-                    <span>Excel</span>
+                    <div className="relative flex items-center justify-center gap-2 text-white">
+                      <FaFileExcel className="text-xl text-white" />
+                      <span className="font-medium text-white">Download Excel</span>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
                   </a>
                   <a 
                     href={pdfUrl} 
                     download 
-                    className="flex-1 sm:flex-none px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-200 hover:shadow-red-300 flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none group relative overflow-hidden px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-purple-200/50 hover:shadow-purple-300/50 hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    <FaFilePdf />
-                    <span>PDF</span>
+                    <div className="relative flex items-center justify-center gap-2 text-white">
+                      <FaFilePdf className="text-xl text-white" />
+                      <span className="font-medium text-white">Download PDF</span>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
                   </a>
                 </div>
               </div>
