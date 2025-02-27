@@ -4,7 +4,7 @@ import './App.css';
 
 function App() {
   const [files, setFiles] = useState([]);
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState([]);
   const [excelUrl, setExcelUrl] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,6 +24,7 @@ function App() {
     files.forEach(file => formData.append('files', file));
 
     const API_URL = import.meta.env.VITE_API_URL || 'https://eggplant-server.onrender.com';
+    console.log(API_URL);
     try {
       const url = `${API_URL.replace(/\/$/, '')}/api/upload`;
       const response = await axios.post(url, formData, {
@@ -93,7 +94,7 @@ function App() {
           </button>
         </div>
 
-        {results && Array.isArray(results) && results.length > 0 && (
+        {results.length > 0 && (
           <div className="results-container">
             <div className="actions-bar">
               <h2>Analysis Results</h2>
