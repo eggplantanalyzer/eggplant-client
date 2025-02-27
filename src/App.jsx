@@ -10,26 +10,33 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
-    const selectedFiles = [...e.target.files];
-    setFiles(selectedFiles);
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      setFiles(selectedFiles);
+    }
   };
 
   const handleUpload = async () => {
-    if (!files.length) return;
+    if (!files || !files.length) return;
     
     setLoading(true);
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
 
-    const API_URL = import.meta.env.VITE_API_URL || 'https://eggplant-server.onrender.com';
+    const API_URL = import.meta.env.VITE_API_URL || 'https://eggplant-server-b95y.onrender.com';
+    console.log(API_URL);
     try {
-      const response = await axios.post(`${API_URL}/api/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const url = `${API_URL.replace(/\/$/, '')}/api/upload`;
+      const response = await axios.post(url, formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
 
       setResults(response.data.results);
-      setExcelUrl(`http://localhost:5000${response.data.excel_url}`);
-      setPdfUrl(`http://localhost:5000${response.data.pdf_url}`);
+      setExcelUrl(`${API_URL}${response.data.excel_url}`);
+      setPdfUrl(`${API_URL}${response.data.pdf_url}`);
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Error processing images. Please try again.');
