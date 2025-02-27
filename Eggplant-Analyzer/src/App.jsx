@@ -4,7 +4,7 @@ import './App.css';
 
 function App() {
   const [files, setFiles] = useState([]);
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState(null);
   const [excelUrl, setExcelUrl] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -93,7 +93,7 @@ function App() {
           </button>
         </div>
 
-        {results.length > 0 && (
+        {results && Array.isArray(results) && results.length > 0 && (
           <div className="results-container">
             <div className="actions-bar">
               <h2>Analysis Results</h2>
