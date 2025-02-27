@@ -3,6 +3,7 @@ import axios from 'axios';
 // Import icons
 import { FaCloudUploadAlt, FaSpinner, FaFileExcel, FaFilePdf, FaHistory } from 'react-icons/fa';
 import History from './components/History';
+import Navbar from './components/Navbar';
 import { parseRGBString } from './utils/colorUtils';
 
 function App() {
@@ -231,20 +232,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
-      <header className="bg-white/70 backdrop-blur-md sticky top-0 z-50 border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">
-            Eggplant Color Analysis
-          </h1>
-          <button
-            onClick={() => setShowHistory(true)}
-            className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-          >
-            <FaHistory />
-            <span className="hidden sm:inline">History</span>
-          </button>
-        </div>
-      </header>
+      <Navbar onHistoryClick={() => setShowHistory(true)} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl p-6 md:p-8">
