@@ -10,12 +10,14 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
-    const selectedFiles = [...e.target.files];
-    setFiles(selectedFiles);
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      setFiles(selectedFiles);
+    }
   };
 
   const handleUpload = async () => {
-    if (!files.length) return;
+    if (!files || !files.length) return;
     
     setLoading(true);
     const formData = new FormData();
