@@ -23,7 +23,7 @@ function App() {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
 
-    const API_URL = import.meta.env.VITE_API_URL || 'https://eggplant-server.onrender.com';
+    const API_URL = 'https://eggplant-server.onrender.com';
     console.log(API_URL);
     try {
       const url = `${API_URL.replace(/\/$/, '')}/api/upload`;
