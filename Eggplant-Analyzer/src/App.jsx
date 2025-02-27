@@ -21,14 +21,19 @@ function App() {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
 
+    const API_URL = import.meta.env.VITE_API_URL || 'https://eggplant-server.onrender.com';
     try {
-      const response = await axios.post('http://localhost:5000/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const url = `${API_URL.replace(/\/$/, '')}/api/upload`;
+      const response = await axios.post(url, formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
 
       setResults(response.data.results);
-      setExcelUrl(`http://localhost:5000${response.data.excel_url}`);
-      setPdfUrl(`http://localhost:5000${response.data.pdf_url}`);
+      setExcelUrl(`${API_URL}${response.data.excel_url}`);
+      setPdfUrl(`${API_URL}${response.data.pdf_url}`);
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Error processing images. Please try again.');
