@@ -1,17 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 // Import icons
-import { FaCloudUploadAlt, FaSpinner, FaFileExcel, FaFilePdf } from 'react-icons/fa';
-
-// Helper function to convert RGB string to CSS color
-const parseRGBString = (rgbString) => {
-  // Handle both formats: "RGB(r,g,b)" and "[r,g,b]"
-  const matches = rgbString.match(/\d+/g);
-  if (matches && matches.length === 3) {
-    return `rgb(${matches[0]}, ${matches[1]}, ${matches[2]})`;
-  }
-  return 'rgb(0, 0, 0)'; // fallback color
-};
+import { FaCloudUploadAlt, FaSpinner, FaFileExcel, FaFilePdf, FaHistory } from 'react-icons/fa';
+import History from './components/History';
+import { parseRGBString } from './utils/colorUtils';
 
 function App() {
   const [files, setFiles] = useState([]);
@@ -19,7 +11,36 @@ function App() {
   const [excelUrl, setExcelUrl] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState([]);
   const resultsRef = useRef(null);
+
+  // Load history from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem('analysisHistory');
+      if (savedHistory) {
+        const parsedHistory = JSON.parse(savedHistory);
+        // Ensure we're loading an array
+        if (Array.isArray(parsedHistory)) {
+          setHistory(parsedHistory);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
+      // If there's an error, start with empty history
+      setHistory([]);
+    }
+  }, []);
+
+  // Save history to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('analysisHistory', JSON.stringify(history));
+    } catch (error) {
+      console.error('Error saving history:', error);
+    }
+  }, [history]);
 
   const handleFileChange = (e) => {
     if (e.target.files) {
@@ -45,11 +66,32 @@ function App() {
         }
       });
 
-      setResults(response.data.results);
-      setExcelUrl(`${API_URL}${response.data.excel_url}`);
-      setPdfUrl(`${API_URL}${response.data.pdf_url}`);
+      const newResults = response.data.results;
+      const newExcelUrl = `${API_URL}${response.data.excel_url}`;
+      const newPdfUrl = `${API_URL}${response.data.pdf_url}`;
 
-      // Add small delay to ensure the results are rendered
+      setResults(newResults);
+      setExcelUrl(newExcelUrl);
+      setPdfUrl(newPdfUrl);
+
+      // Create new history entry
+      const historyEntry = {
+        id: Date.now(), // Add unique ID for each entry
+        timestamp: new Date().toISOString(),
+        results: newResults,
+        excelUrl: newExcelUrl,
+        pdfUrl: newPdfUrl,
+        fileCount: files.length,
+      };
+
+      // Update history by adding new entry to the beginning
+      setHistory(prevHistory => {
+        const updatedHistory = [historyEntry, ...prevHistory];
+        // Optionally limit history size (e.g., keep last 50 entries)
+        const maxHistorySize = 50;
+        return updatedHistory.slice(0, maxHistorySize);
+      });
+
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -59,6 +101,13 @@ function App() {
       alert('Error processing images. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearHistory = () => {
+    if (window.confirm('Are you sure you want to clear all history? This action cannot be undone.')) {
+      setHistory([]);
+      localStorage.removeItem('analysisHistory'); // Also clear from localStorage
     }
   };
 
@@ -183,10 +232,17 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
       <header className="bg-white/70 backdrop-blur-md sticky top-0 z-50 border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">
             Eggplant Color Analysis
           </h1>
+          <button
+            onClick={() => setShowHistory(true)}
+            className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+          >
+            <FaHistory />
+            <span className="hidden sm:inline">History</span>
+          </button>
         </div>
       </header>
 
@@ -287,6 +343,14 @@ function App() {
           </div>
         )}
       </main>
+
+      {showHistory && (
+        <History
+          history={history}
+          onClose={() => setShowHistory(false)}
+          onClear={clearHistory}
+        />
+      )}
     </div>
   );
 }
