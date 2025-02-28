@@ -1,7 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-// Import icons
-import { FaCloudUploadAlt, FaSpinner, FaFileExcel, FaFilePdf, FaHistory } from 'react-icons/fa';
+import { 
+  FaCloudUploadAlt, 
+  FaSpinner, 
+  FaFileExcel, 
+  FaFilePdf, 
+  FaHistory,
+  FaImage,
+  FaPalette,
+  FaPercentage,
+  FaTable,
+  FaDownload,
+  FaTrash,
+  FaTimesCircle,
+  FaCheckCircle,
+  FaInfoCircle
+} from 'react-icons/fa';
 import History from './components/History';
 import Navbar from './components/Navbar';
 import { parseRGBString } from './utils/colorUtils';
@@ -112,6 +126,58 @@ function App() {
     }
   };
 
+  const renderMobileCards = () => (
+    <div className="md:hidden space-y-4">
+      {results.map(result => (
+        <div key={result.id} className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <img
+                src={`data:image/png;base64,${result.processed_image}`}
+                alt="Processed"
+                className="w-16 h-16 object-contain rounded-lg bg-gray-50"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <FaImage className="text-purple-500 flex-shrink-0" />
+                <h3 className="text-sm font-medium text-gray-900 break-words">
+                  {result.filename}
+                </h3>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <FaPalette className="text-purple-500 flex-shrink-0" />
+                  <div 
+                    className="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0"
+                    style={{ backgroundColor: parseRGBString(result.avg_color) }}
+                  />
+                  <span className="break-words">{result.avg_color}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaPercentage className="text-purple-500 flex-shrink-0" />
+                  <span>Black: {result.color_percentages.Black}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaPercentage className="text-purple-500 flex-shrink-0" />
+                  <span>Dark P: {result.color_percentages['Dark Purple']}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaPercentage className="text-purple-500 flex-shrink-0" />
+                  <span>Light P: {result.color_percentages['Light Purple']}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaPercentage className="text-purple-500 flex-shrink-0" />
+                  <span>Brown: {result.color_percentages.Brown}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const renderDesktopTable = () => (
     <div className="hidden md:block overflow-x-auto -mx-6 md:-mx-8">
       <div className="inline-block min-w-full align-middle">
@@ -119,114 +185,89 @@ function App() {
           <table className="min-w-full divide-y divide-purple-100">
             <thead className="bg-purple-50">
               <tr>
-                {["ID", "File", "Original", "Processed", "Average Color", "Black", "Dark P", "Light P", "Brown"].map((header) => (
-                  <th 
-                    key={header}
-                    scope="col" 
-                    className="px-4 py-3.5 text-left text-xs font-semibold text-purple-700 uppercase tracking-wider"
-                  >
-                    {header}
-                  </th>
-                ))}
+                <th className="px-4 py-3.5 text-left text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                  <FaImage className="inline-block mr-2" />
+                  Image
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                  <FaTable className="inline-block mr-2" />
+                  Details
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                  <FaPalette className="inline-block mr-2" />
+                  Colors
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-purple-100">
               {results.map(result => (
                 <tr key={result.id} className="hover:bg-purple-50 transition-colors">
-                  <td className="px-4 py-4">{result.id}</td>
-                  <td className="px-4 py-4 max-w-[200px] truncate">{result.filename}</td>
                   <td className="px-4 py-4">
-                    <img 
-                      src={`data:image/png;base64,${result.original_image}`} 
-                      alt="Original"
-                      className="h-24 w-24 object-contain rounded-lg bg-gray-50"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <img
-                      src={`data:image/png;base64,${result.processed_image}`}
-                      alt="Processed"
-                      className="h-24 w-24 object-contain rounded-lg bg-gray-50"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-8 h-8 rounded-lg border border-gray-200 shadow-sm"
-                        style={{ backgroundColor: parseRGBString(result.avg_color) }}
-                      />
-                      <span>{result.avg_color}</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={`data:image/png;base64,${result.original_image}`} 
+                          alt="Original"
+                          className="h-16 w-16 object-contain rounded-lg bg-gray-50"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          <FaImage className="inline-block mr-2 text-purple-500" />
+                          {result.filename}
+                        </p>
+                        <p className="text-sm text-gray-500 truncate">
+                          ID: {result.id}
+                        </p>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-4 py-4">{result.color_percentages.Black}%</td>
-                  <td className="px-4 py-4">{result.color_percentages['Dark Purple']}%</td>
-                  <td className="px-4 py-4">{result.color_percentages['Light Purple']}%</td>
-                  <td className="px-4 py-4">{result.color_percentages.Brown}%</td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={`data:image/png;base64,${result.processed_image}`}
+                          alt="Processed"
+                          className="h-16 w-16 object-contain rounded-lg bg-gray-50"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-6 h-6 rounded-full border border-gray-200"
+                            style={{ backgroundColor: parseRGBString(result.avg_color) }}
+                          />
+                          <span className="text-sm text-gray-900">{result.avg_color}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <FaPercentage className="text-purple-500" />
+                        Black: {result.color_percentages.Black}%
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaPercentage className="text-purple-500" />
+                        Dark P: {result.color_percentages['Dark Purple']}%
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaPercentage className="text-purple-500" />
+                        Light P: {result.color_percentages['Light Purple']}%
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaPercentage className="text-purple-500" />
+                        Brown: {result.color_percentages.Brown}%
+                      </div>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
-
-  const renderMobileCards = () => (
-    <div className="md:hidden space-y-4">
-      {results.map(result => (
-        <div key={result.id} className="bg-white rounded-xl p-4 shadow-sm space-y-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <span className="text-sm text-purple-600">ID: {result.id}</span>
-              <h3 className="text-sm font-medium text-gray-900 mt-1 truncate max-w-[200px]">
-                {result.filename}
-              </h3>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <span className="text-xs text-purple-600">Processed Image</span>
-            <img
-              src={`data:image/png;base64,${result.processed_image}`}
-              alt="Processed"
-              className="w-3/4 mx-auto aspect-square object-contain rounded-lg shadow-sm bg-gray-50"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
-              <div>
-                <span className="text-purple-600">Average Color:</span>
-                <div className="flex items-center gap-2 mt-1">
-                  <div 
-                    className="w-6 h-6 rounded-full border border-gray-200 shadow-sm"
-                    style={{ backgroundColor: parseRGBString(result.avg_color) }}
-                  />
-                  <p className="font-medium">{result.avg_color}</p>
-                </div>
-              </div>
-              <div>
-                <span className="text-purple-600">Black:</span>
-                <p className="font-medium">{result.color_percentages.Black}%</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div>
-                <span className="text-purple-600">Dark Purple:</span>
-                <p className="font-medium">{result.color_percentages['Dark Purple']}%</p>
-              </div>
-              <div>
-                <span className="text-purple-600">Light Purple:</span>
-                <p className="font-medium">{result.color_percentages['Light Purple']}%</p>
-              </div>
-              <div>
-                <span className="text-purple-600">Brown:</span>
-                <p className="font-medium">{result.color_percentages.Brown}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
     </div>
   );
 
@@ -259,7 +300,10 @@ function App() {
 
           {files.length > 0 && (
             <div className="mt-8 space-y-4">
-              <h3 className="text-lg font-semibold text-purple-900">Selected Images ({files.length})</h3>
+              <h3 className="text-lg font-semibold text-purple-900 flex items-center gap-2">
+                <FaImage className="text-purple-500" />
+                Selected Images ({files.length})
+              </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {Array.from(files).map((file, index) => (
                   <div key={index} className="relative group">
@@ -270,7 +314,10 @@ function App() {
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                     </div>
-                    <p className="mt-2 text-sm text-purple-700 truncate">{file.name}</p>
+                    <p className="mt-2 text-sm text-purple-700 truncate flex items-center gap-1">
+                      <FaImage className="flex-shrink-0" />
+                      <span>{file.name}</span>
+                    </p>
                   </div>
                 ))}
               </div>
@@ -287,7 +334,10 @@ function App() {
                     Processing...
                   </span>
                 ) : (
-                  'Analyze Images'
+                  <span className="flex items-center justify-center gap-2">
+                    <FaCheckCircle />
+                    Analyze Images
+                  </span>
                 )}
               </button>
             </div>
@@ -296,31 +346,32 @@ function App() {
 
         {results && results.length > 0 && (
           <div ref={resultsRef} className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-6 md:p-8 space-y-6">
+            <div className="p-4 sm:p-6 md:p-8 space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-xl font-bold text-purple-900">Analysis Results</h2>
+                <h2 className="text-xl font-bold text-purple-900 flex items-center gap-2">
+                  <FaPalette className="text-purple-500" />
+                  Analysis Results
+                </h2>
                 <div className="flex gap-3 w-full sm:w-auto">
                   <a 
                     href={excelUrl} 
                     download 
-                    className="flex-1 sm:flex-none group relative overflow-hidden px-6 py-3 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg shadow-purple-200/50 hover:shadow-purple-300/50 hover:-translate-y-0.5 active:translate-y-0"
+                    className="flex-1 sm:flex-none group relative overflow-hidden px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg shadow-purple-200/50 hover:shadow-purple-300/50 hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    <div className="relative flex items-center justify-center gap-2 text-white">
-                      <FaFileExcel className="text-xl text-white" />
-                      <span className="font-medium text-white">Download Excel</span>
+                    <div className="relative flex items-center justify-center gap-2 text-white text-sm sm:text-base">
+                      <FaFileExcel className="text-lg sm:text-xl" />
+                      <span className="font-medium">Excel</span>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
                   </a>
                   <a 
                     href={pdfUrl} 
                     download 
-                    className="flex-1 sm:flex-none group relative overflow-hidden px-6 py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-purple-200/50 hover:shadow-purple-300/50 hover:-translate-y-0.5 active:translate-y-0"
+                    className="flex-1 sm:flex-none group relative overflow-hidden px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-purple-200/50 hover:shadow-purple-300/50 hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    <div className="relative flex items-center justify-center gap-2 text-white">
-                      <FaFilePdf className="text-xl text-white" />
-                      <span className="font-medium text-white">Download PDF</span>
+                    <div className="relative flex items-center justify-center gap-2 text-white text-sm sm:text-base">
+                      <FaFilePdf className="text-lg sm:text-xl" />
+                      <span className="font-medium">PDF</span>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
                   </a>
                 </div>
               </div>
