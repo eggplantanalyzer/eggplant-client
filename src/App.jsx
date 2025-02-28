@@ -189,7 +189,7 @@ function App() {
             <img
               src={`data:image/png;base64,${result.processed_image}`}
               alt="Processed"
-              className="w-full aspect-square object-contain rounded-lg shadow-sm bg-gray-50"
+              className="w-3/4 mx-auto aspect-square object-contain rounded-lg shadow-sm bg-gray-50"
             />
           </div>
 
